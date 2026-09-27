@@ -1,0 +1,23 @@
+Build docker image:
+
+docker build -t sched-ext-builder .
+
+
+spin up a docker:
+
+docker run -it --name kernel-scx-build --rm -v $(pwd):/workspace --user $(id -u):$(id -g) -e PS1="kernel-builder@docker:\w\$ " sched-ext-builder bash
+
+
+on another terminal:
+
+docker exec -it kernel-scx-build bash
+
+
+to build kernel inside docker (using helper_scripts/build-kernel.sh)
+
+time ./build-kernel.sh 22 -scxkvm ../kout
+
+to build scx inside docker
+
+time cargo build --release
+
