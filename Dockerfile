@@ -16,25 +16,32 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     qemu-system-x86 qemu-kvm debootstrap \
     && rm -rf /var/lib/apt/lists/*
 
-# 3. Fetch and install Clang 22 directly from apt.llvm.org for correct BPF lowering
+# 3. Fetch and install Clang 22 directly from apt.llvm.org
 RUN wget https://apt.llvm.org/llvm.sh && \
     chmod +x llvm.sh && \
     ./llvm.sh 22 && \
     rm llvm.sh
 
-# 4. Set Clang 22 as the default compiler for eBPF/scx
-ENV CC=clang-22 \
-    CXX=clang++-22
+# 4. Create symlinks so hardcoded 'clang' commands map to 'clang-22'
+RUN ln -s /usr/bin/clang-22 /usr/bin/clang && \
+    ln -s /usr/bin/clang++-22 /usr/bin/clang++ && \
+    ln -s /usr/bin/llvm-strip-22 /usr/bin/llvm-strip && \
+    ln -s /usr/bin/llvm-objcopy-22 /usr/bin/llvm-objcopy && \
+    ln -s /usr/bin/llc-22 /usr/bin/llc
 
-# 5. Install Rust via rustup and grant access
+# 5. Set Clang 22 as the default compiler for standard C/C++ builds
+ENV CC=clang \
+    CXX=clang++
+
+# 6. Install Rust via rustup and grant access
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
     chmod -R 777 $RUSTUP_HOME $CARGO_HOME
 
-# 6. Set up ccache directory to persist cache across container runs
+# 7. Set up ccache directory to persist cache across container runs
 RUN mkdir -p /workspace/.ccache && chmod -R 777 /workspace/.ccache
 ENV CCACHE_DIR=/workspace/.ccache
 
-# 7. Set up custom prompt
+# 8. Set up custom prompt
 RUN echo 'export PS1="kernel-builder@docker:\w\$ "' >> /etc/bash.bashrc && \
     echo "alias ls='ls --color=auto'" >> /etc/bash.bashrc && \
     echo "alias grep='grep --color=auto'" >> /etc/bash.bashrc
