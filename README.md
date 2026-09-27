@@ -111,9 +111,9 @@ make -j$(nproc) bindeb-pkg
 ```
 
 ## 7. Important Things to Consider
-* **Standard Linux Target Over AOSP:** The compiled schedulers (like `scx_lavd` and `scx_cosmos`) and the generated `.deb` packages are entirely decoupled from Android Open Source Project constraints. They are ready for native deployment on standard distributions like Debian, Ubuntu, or Yocto targeting hardware like the Qualcomm IQ-9075.
+* **Standard Linux Targets:** The compiled schedulers (like `scx_lavd` and `scx_cosmos`) and the generated `.deb` packages are ready for native deployment on standard distributions like Debian, Ubuntu, or Yocto targeting hardware like the Qualcomm IQ-9075.
 * **Building Userspace Schedulers:** To compile the `scx` schedulers alongside the kernel, navigate to the `/workspace/scx` directory inside the container and run `meson setup build && ninja -C build`. This provides the reference C and Rust binaries to synthesize custom scheduling logic like the DCJL algorithm.
-* **Volume Mapping Strategy:** Running `docker run` from the parent directory is mandatory if using `make bindeb-pkg`, as the Debian packaging scripts write the output files one level above the kernel source tree. 
+* **Volume Mapping Strategy:** Running `docker run` from the parent directory is mandatory if using `make bindeb-pkg`, as the Debian packaging scripts write the output files one level above the kernel source tree.
 
 ## 8. Caveats
 * **Rust Crate Caching:** Because the container uses the `--rm` flag, it vanishes upon exit. While the kernel source and compiled `bzImage` remain safe on your host via the `-v` mount, the `~/.cargo/registry` inside the container does not persist. Rust will re-download crates every time you run a fresh container shell and build the `scx` repository. 
